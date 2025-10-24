@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title data-lang-ru="SpaceSleep: Контроль сна КИУ" data-lang-en="SpaceSleep: KIU Sleep Tracker">SpaceSleep: Контроль сна КИУ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(180deg, #0a0a23 0%, #1e3a8a 100%);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            color: white;
+            position: relative;
+        }
+        canvas#stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            padding-bottom: 80px;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        .navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1e3a8a;
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .navbar button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+        }
+        @media (max-width: 600px) {
+            .app-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars"></canvas>
+    <div class="notification" id="notification" data-lang-ru="Уведомление" data-lang-en="Notification"></div>
+    <div class="app-container">
+        <header class="bg-blue-900 p-6 text-center">
+            <h1 class="text-3xl font-bold" data-lang-ru="SpaceSleep КИУ" data-lang-en="SpaceSleep KIU">SpaceSleep КИУ</h1>
+            <p class="mt-2 text-lg" data-lang-ru="Путешествуй к звездам с идеальным сном!" data-lang-en="Journey to the stars with perfect sleep!">Путешествуй к звездам с идеальным сном!</p>
+        </header>
+
+        <main class="p-6">
+            <section class="mb-12">
+                <h2 class="text-2xl font-semibold text-center mb-6" data-lang-ru="Калькулятор космического сна" data-lang-en="Cosmic Sleep Calculator">Калькулятор космического сна</h2>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg card">
+                    <label for="wakeUpTime" class="block text-lg mb-2" data-lang-ru="Время пробуждения:" data-lang-en="Wake-up time:">Время пробуждения:</label>
+                    <input type="time" id="wakeUpTime" class="w-full p-2 rounded bg-gray-800 text-white mb-4">
+                    <button id="calculateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition" data-lang-ru="Рассчитать орбиту сна" data-lang-en="Calculate Sleep Orbit">Рассчитать орбиту сна</button>
+                    <p id="result" class="mt-4 text-center"></p>
+                </div>
+            </section>
+
+            <section class="mb-12">
+                <h2 class="text-2xl font-semibold text-center mb-6" data-lang-ru="Советы астронавта" data-lang-en="Astronaut Tips">Советы астронавта</h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg card">
+                        <h3 class="text-xl font-bold mb-2" data-lang-ru="Стабильная орбита" data-lang-en="Stable Orbit">Стабильная орбита</h3>
+                        <p data-lang-ru="Ложитесь спать в одно и то же время. Циклы сна (90 минут) — ключ к бодрости." data-lang-en="Go to bed at the same time. Sleep cycles (90 minutes) are key to alertness.">Ложитесь спать в одно и то же время. Циклы сна (90 минут) — ключ к бодрости.</p>
+                    </div>
+                    <div class="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg card">
+                        <h3 class="text-xl font-bold mb-2" data-lang-ru="Перед стартом" data-lang-en="Before Launch">Перед стартом</h3>
+                        <p data-lang-ru="Отключите гаджеты за час до сна, используйте теплый свет и медитацию." data-lang-en="Turn off devices an hour before bed, use warm light and meditation.">Отключите гаджеты за час до сна, используйте теплый свет и медитацию.</p>
+                    </div>
+                    <div class="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg card">
+                        <h3 class="text-xl font-bold mb-2" data-lang-ru="Утренний запуск" data-lang-en="Morning Launch">Утренний запуск</h3>
+                        <p data-lang-ru="Просыпайтесь с солнечным светом и легкой зарядкой для энергии." data-lang-en="Wake up with sunlight and a light workout for energy.">Просыпайтесь с солнечным светом и легкой зарядкой для энергии.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="text-center">
+                <h2 class="text-2xl font-semibold mb-6" data-lang-ru="Зачем студенту сон?" data-lang-en="Why Sleep Matters for Students?">Зачем студенту сон?</h2>
+                <p class="max-w-md mx-auto" data-lang-ru="Как астронавт в космосе, студент КИУ нуждается в качественном сне для концентрации, памяти и успешной учебы." data-lang-en="Like an astronaut in space, a KIU student needs quality sleep for focus, memory, and academic success.">Как астронавт в космосе, студент КИУ нуждается в качественном сне для концентрации, памяти и успешной учебы.</p>
+            </section>
+        </main>
+    </div>
+
+    <div class="navbar">
+        <button onclick="showSection('calculator')" data-lang-ru="Калькулятор" data-lang-en="Calculator">Калькулятор</button>
+        <button onclick="showSection('tips')" data-lang-ru="Советы" data-lang-en="Tips">Советы</button>
+        <button onclick="showSection('info')" data-lang-ru="О сне" data-lang-en="About Sleep">О сне</button>
+        <button id="langSwitch" onclick="switchLanguage()" data-lang-ru="EN" data-lang-en="RU">EN</button>
+    </div>
+
+    <script>
+        // Звездный фон
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2,
+                speed: Math.random() * 0.5 + 0.1
+            });
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                star.y += star.speed;
+                if (star.y > canvas.height) star.y = 0;
+            });
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        // Анимация GSAP
+        gsap.from('.card', { opacity: 0, y: 50, stagger: 0.2, duration: 1, ease: 'power2.out' });
+        gsap.from('header', { opacity: 0, y: -50, duration: 1, ease: 'power2.out' });
+
+        // Переключение языка
+        let currentLang = 'ru';
+        function switchLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            document.querySelectorAll('[data-lang-ru][data-lang-en]').forEach(element => {
+                element.textContent = element.getAttribute(`data-lang-${currentLang}`);
+            });
+            document.title = document.querySelector('title').getAttribute(`data-lang-${currentLang}`);
+            gsap.from('.app-container', { opacity: 0, duration: 0.5, ease: 'power2.in' });
+            showNotification(currentLang === 'ru' ? 'Язык изменен на русский' : 'Language switched to English');
+        }
+
+        // Навигация
+        function showSection(section) {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            document.querySelector(`section:nth-of-type(${section === 'calculator' ? 1 : section === 'tips' ? 2 : 3})`).style.display = 'block';
+            gsap.from(`section:nth-of-type(${section === 'calculator' ? 1 : section === 'tips' ? 2 : 3})`, { opacity: 0, y: 20, duration: 0.5 });
+        }
+
+        // Калькулятор сна
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            const wakeUpTime = document.getElementById('wakeUpTime').value;
+            if (!wakeUpTime) {
+                showNotification(currentLang === 'ru' ? 'Выберите время пробуждения!' : 'Please select a wake-up time!');
+                return;
+            }
+
+            const [hours, minutes] = wakeUpTime.split(':').map(Number);
+            const wakeUp = new Date();
+            wakeUp.setHours(hours, minutes, 0, 0);
+
+            // Рассчитываем 4 цикла сна (90 минут) + 15 минут на засыпание
+            const sleepTimes = [
+                new Date(wakeUp - (6 * 60 + 15) * 60 * 1000), // 6 часов (4 цикла)
+                new Date(wakeUp - (7.5 * 60 + 15) * 60 * 1000), // 7.5 часов (5 циклов)
+                new Date(wakeUp - (9 * 60 + 15) * 60 * 1000) // 9 часов (6 циклов)
+            ];
+
+            const formatTime = (date) => date.toLocaleTimeString(currentLang === 'ru' ? 'ru-RU' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+            document.getElementById('result').textContent = currentLang === 'ru' ?
+                `Для пробуждения в ${formatTime(wakeUp)}:\n` +
+                `Ложитесь спать в ${formatTime(sleepTimes[0])} (6 часов сна),\n` +
+                `${formatTime(sleepTimes[1])} (7.5 часов сна) или\n` +
+                `${formatTime(sleepTimes[2])} (9 часов сна).` :
+                `To wake up at ${formatTime(wakeUp)}:\n` +
+                `Go to bed at ${formatTime(sleepTimes[0])} (6 hours of sleep),\n` +
+                `${formatTime(sleepTimes[1])} (7.5 hours of sleep), or\n` +
+                `${formatTime(sleepTimes[2])} (9 hours of sleep).`;
+
+            showNotification(currentLang === 'ru' ? 'Ваш график сна рассчитан!' : 'Your sleep schedule is calculated!');
+        });
+
+        // Уведомления
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            gsap.fromTo(notification, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5 });
+            setTimeout(() => {
+                gsap.to(notification, { opacity: 0, y: -20, duration: 0.5, onComplete: () => notification.style.display = 'none' });
+            }, 3000);
+        }
+
+        // Адаптация под изменение размера окна
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
